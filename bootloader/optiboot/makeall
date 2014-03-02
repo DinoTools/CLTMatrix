@@ -1,0 +1,6 @@
+#!/bin/bash
+make clean
+#
+#  buildable platforms of somewhat questionable support level
+make cltmatrix168
+make cltmatrix328
