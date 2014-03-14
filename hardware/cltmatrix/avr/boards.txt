@@ -8,7 +8,7 @@ cltmatrix.name=CLT-Matrix
 cltmatrix.upload.tool=arduino:avrdude
 cltmatrix.upload.protocol=arduino
 
-cltmatrix.bootloader.tool=avrdude
+cltmatrix.bootloader.tool=arduino:avrdude
 cltmatrix.bootloader.low_fuses=0xFF
 cltmatrix.bootloader.unlock_bits=0x3F
 cltmatrix.bootloader.lock_bits=0x0F
