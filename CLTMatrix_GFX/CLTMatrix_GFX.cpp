@@ -224,31 +224,29 @@ void CLTMatrix::init_tc2()
 void CLTMatrix::run(void)
 {
   CLTMatrix_Color_t *pixel = this->_getActivePixel(0, this->line);
+  uint8_t step_mapped = this->step * 31;
   uint8_t tmp_line = this->line;
   uint8_t portc;
   uint8_t temp;
   uint8_t i;
 
-  // off
-  PORTC &= ~(1<<PC1);
-
   // shift data into registers
   for (i = 0; i < 8; i++) {
     PORTB &= ~(1<<PB4);
     temp = pixel->b;
-    if (temp > this->step)
+    if (temp > step_mapped)
       PORTB |= (1<<PB2);
     else
       PORTB &= ~(1<<PB2);
       
     temp = pixel->g;
-    if (temp > this->step)
+    if (temp > step_mapped)
       PORTB |= (1<<PB5);
     else
       PORTB &= ~(1<<PB5);
 
     temp = pixel->r;
-    if (temp > this->step)
+    if (temp > step_mapped)
       PORTB |= (1<<PB1);
     else
       PORTB &= ~(1<<PB1);
@@ -259,6 +257,9 @@ void CLTMatrix::run(void)
   // load serial data
   PORTB |= (1 << PB3);
   PORTB &= ~(1 << PB3);
+
+  if (this->step > 0)
+    return;
 
   if (tmp_line > 3)
     tmp_line = 11 - tmp_line;
@@ -303,18 +304,33 @@ void CLTMatrix::swapBuffers(boolean copy)
  * The timer interrupt.
  */
 ISR(TIMER2_OVF_vect)
-{ 
+{
+  uint8_t i;
   // ISR fires every 256-TCNT2 ticks
   TCNT2 = 230;
   if(activePanel == NULL)
     return;
 
-  activePanel->run();
-  if (++activePanel->line > 7) {
-    activePanel->line = 0;
-    if (activePanel->step < 8)
-      activePanel->step = 255;
-    else
-      activePanel->step /= 2;
+  if (activePanel->step > 8) {
+    PORTB &= ~(1<<PB2);
+    PORTB &= ~(1<<PB5);
+    PORTB &= ~(1<<PB1);
+    for (i = 0; i < 8; i++) {
+      PORTB &= ~(1<<PB4);
+      PORTB |= (1<<PB4);
+    }
+    // load serial data
+    PORTB |= (1 << PB3);
+    PORTB &= ~(1 << PB3);
+    activePanel->step = 0;
+    if (++activePanel->line > 7)
+      activePanel->line = 0;
+  } else {
+    activePanel->run();
+    activePanel->step++;
+  }
+  if (activePanel->step > 8) {
+    // off
+    PORTC &= ~(1<<PC1);
   }
 }
