@@ -248,30 +248,42 @@ uint8_t ArduRPC_CLTMatrix_GFX_Wrapper(uint8_t cmd_id, ArduRPC *rpc, void *args)
       rpc->getParam_uint8()
     );
   } else if(cmd_id == 0x51) {
-    // ToDo
-    /*
-    panel->drawBitmap(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      //(uint8_t *)data[0],
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );*/
-  } else if(cmd_id == 0xA0) {
     if(rpc->getParam_uint8() == 1) {
       panel->swapBuffers(true);
     } else {
       panel->swapBuffers(false);
     }
     return RPC_RETURN_SUCCESS;
-  } else if(cmd_id == 0xA1) {
+  } else if(cmd_id == 0x52) {
     options->auto_swap = rpc->getParam_uint8();
     return RPC_RETURN_SUCCESS;
+  } else if(cmd_id == 0x60) {
+    uint16_t x;
+    uint16_t y;
+    uint8_t width;
+    uint8_t height;
+    uint8_t color_mode;
+    uint8_t i, j;
+    x = rpc->getParam_int16();
+    y = rpc->getParam_int16();
+    width = rpc->getParam_uint8();
+    height = rpc->getParam_uint8();
+    color_mode = rpc->getParam_uint8();
+    if (color_mode == 2) {
+      for(i = 0; i < width; i++) {
+        for(j = 0; j < width; j++) {
+          panel->drawPixel(
+            x + j,
+            y + i,
+            panel->color(
+              rpc->getParam_uint8(),
+              rpc->getParam_uint8(),
+              rpc->getParam_uint8()
+            )
+          );
+        }
+      }
+    }
   } else {
     return RPC_RETURN_COMMAND_NOT_FOUND;
   }
@@ -286,6 +298,6 @@ rpc_handler_t get_ArduRPC_CLTMatrix_GFX_Wrapper(CLTMatrix &panel)
   struct ArduRPC_CLTMatrix_GFX_options *options = (struct ArduRPC_CLTMatrix_GFX_options *)malloc(sizeof(struct ArduRPC_CLTMatrix_GFX_options));
   options->auto_swap = 1;
   options->panel = &panel;
-  rpc_handler_t h = {0x0281, (void *)ArduRPC_CLTMatrix_GFX_Wrapper, (void *)options};
+  rpc_handler_t h = {0x0280, (void *)ArduRPC_CLTMatrix_GFX_Wrapper, (void *)options};
   return h;
 }
