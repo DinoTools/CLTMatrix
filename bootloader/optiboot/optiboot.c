@@ -435,7 +435,6 @@ int main(void) {
   DDRD &= ~(1 << PD3);
   PORTD |= (0 << PD3);
   if (!(PIND & (1 << PD3))) {
-	  putch('a');
     appStart(ch);
   }
 
