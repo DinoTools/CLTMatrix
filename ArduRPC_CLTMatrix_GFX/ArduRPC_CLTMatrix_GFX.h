@@ -1,6 +1,6 @@
 /**
  * CLTMatrix
- * Copyright (C) 2014 Philipp Seidel (DinoTools)
+ * Copyright (C) 2014-2015 PhiBo (DinoTools)
  *
  * This file is part of CLTMatrix.
  *
@@ -33,18 +33,15 @@
  #include <pins_arduino.h>
 #endif
 
-#define RPC_CLT_API_BASE 0x01
-#define RPC_CLT_API_FULL 0xff
-
-#define RPC_CLT_API_MODE RPC_CLT_API_FULL
-
-struct ArduRPC_CLTMatrix_GFX_options {
-  CLTMatrix *panel;
-  uint8_t auto_swap;
+class ArduRPC_CLTMatrix_GFX : public ArduRPCHandler
+{
+  public:
+    ArduRPC_CLTMatrix_GFX(ArduRPC &rpc, char *name, CLTMatrix &panel);
+    uint8_t
+      call(uint8_t);
+  private:
+    CLTMatrix *panel;
+    uint8_t auto_swap;
 };
-
-uint8_t ArduRPC_CLTMatrix_GFX_Wrapper(uint8_t cmd_id, ArduRPC *rpc, void *args);
-
-rpc_handler_t get_ArduRPC_CLTMatrix_GFX_Wrapper(CLTMatrix &panel);
 
 #endif

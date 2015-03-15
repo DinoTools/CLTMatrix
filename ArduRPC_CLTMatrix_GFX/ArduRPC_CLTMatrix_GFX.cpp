@@ -1,6 +1,6 @@
 /**
  * CLTMatrix
- * Copyright (C) 2014 Philipp Seidel (DinoTools)
+ * Copyright (C) 2014-2015 PhiBo (DinoTools)
  *
  * This file is part of CLTMatrix.
  *
@@ -20,266 +20,373 @@
 
 #include "ArduRPC_CLTMatrix_GFX.h"
 
-uint8_t ArduRPC_CLTMatrix_GFX_Wrapper(uint8_t cmd_id, ArduRPC *rpc, void *args)
+ArduRPC_CLTMatrix_GFX::ArduRPC_CLTMatrix_GFX(ArduRPC &rpc, char *name, CLTMatrix &panel) : ArduRPCHandler()
 {
-  struct ArduRPC_CLTMatrix_GFX_options *options = (struct ArduRPC_CLTMatrix_GFX_options *)args;
-  CLTMatrix *panel = (CLTMatrix*)options->panel;
+  this->type = 0x0280;
+  this->registerSelf(rpc, name, (void *)this);
+
+  this->panel = &panel;
+  this->auto_swap = 1;
+}
+
+uint8_t ArduRPC_CLTMatrix_GFX::call(uint8_t cmd_id)
+{
+  uint16_t x1, y1, x2, y2;
+  uint8_t r, g, b;
+
+  uint16_t tmp_u16_1, tmp_u16_2;
+  uint8_t tmp_u8;
+  uint8_t height;
+  uint8_t width;
+  uint8_t c, i, j, k;
 
   if (cmd_id == 0x01) {
-    rpc->writeResult_uint8(3);
+    this->_rpc->writeResult_uint8(3);
     return RPC_RETURN_SUCCESS;
   } else if (cmd_id == 0x02) {
-    rpc->writeResult_uint16(panel->width());
+    this->_rpc->writeResult_uint16(this->panel->width());
     return RPC_RETURN_SUCCESS;
   } else if (cmd_id == 0x03) {
-    rpc->writeResult_uint16(panel->height());
+    this->_rpc->writeResult_uint16(this->panel->height());
     return RPC_RETURN_SUCCESS;
   } else if(cmd_id == 0x11) {
-    panel->drawPixel(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
-  } else if(cmd_id == 0x20) {
-    panel->drawLine(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->drawPixel(x1, y1, this->panel->color(r,g,b));
   } else if(cmd_id == 0x21) {
-    panel->drawFastVLine(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+    x2 = this->_rpc->getParam_int16();
+    y2 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->drawLine(x1, y1, x2, y2, this->panel->color(r,g,b));
   } else if(cmd_id == 0x22) {
-    panel->drawFastHLine(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+
+    /* Height */
+    tmp_u16_1 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->drawFastVLine(
+      x1, y1,
+      i,
+      this->panel->color(r, g, b)
     );
   } else if(cmd_id == 0x23) {
-    panel->drawRect(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+
+    /* width */
+    tmp_u16_1 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->drawFastHLine(
+      x1, y1,
+      i,
+      this->panel->color(r, g, b)
     );
   } else if(cmd_id == 0x24) {
-    panel->fillRect(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+    x2 = this->_rpc->getParam_int16();
+    y2 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->drawRect(x1, y1, x2, y2, this->panel->color(r, g, b));
   } else if(cmd_id == 0x25) {
-    panel->fillScreen(
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+    x2 = this->_rpc->getParam_int16();
+    y2 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->fillRect(x1, y1, x2, y2, this->panel->color(r, g, b));
   } else if(cmd_id == 0x26) {
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->fillScreen(this->panel->color(r, g, b));
+  } else if(cmd_id == 0x27) {
     // ToDo
-  } else if(cmd_id == 0x30) {
-    panel->drawCircle(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
   } else if(cmd_id == 0x31) {
-    panel->fillCircle(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+
+    /* Radius */
+    tmp_u16_1 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->drawCircle(x1, y1, tmp_u16_1, this->panel->color(r, g, b));
   } else if(cmd_id == 0x32) {
-    panel->drawTriangle(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+
+    /* Radius */
+    tmp_u16_1 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->fillCircle(x1, y1, tmp_u16_1, this->panel->color(r, g, b));
   } else if(cmd_id == 0x33) {
-    panel->fillTriangle(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+    x2 = this->_rpc->getParam_int16();
+    y2 = this->_rpc->getParam_int16();
+    tmp_u16_1 = this->_rpc->getParam_int16();
+    tmp_u16_2 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->drawTriangle(
+      x1, y1,
+      x2, y2,
+      tmp_u16_1, tmp_u16_2,
+      this->panel->color(r, g, b)
     );
   } else if(cmd_id == 0x34) {
-    panel->drawRoundRect(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+    x2 = this->_rpc->getParam_int16();
+    y2 = this->_rpc->getParam_int16();
+    tmp_u16_1 = this->_rpc->getParam_int16();
+    tmp_u16_2 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->fillTriangle(
+      x1, y1,
+      x2, y2,
+      tmp_u16_1, tmp_u16_2,
+      this->panel->color(r, g, b)
     );
   } else if(cmd_id == 0x35) {
-    panel->fillRoundRect(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
-  } else if(cmd_id == 0x40) {
-    panel->drawChar(
-      rpc->getParam_int16(),
-      rpc->getParam_int16(),
-      rpc->getParam_uint8(),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      ),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      ),
-      rpc->getParam_uint8()
-    );
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+    x2 = this->_rpc->getParam_int16();
+    y2 = this->_rpc->getParam_int16();
+
+    /* Radius */
+    tmp_u16_1 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->drawRoundRect(x1, y1, x2, y2, tmp_u16_1, this->panel->color(r, g, b));
+  } else if(cmd_id == 0x36) {
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+    x2 = this->_rpc->getParam_int16();
+    y2 = this->_rpc->getParam_int16();
+
+    /* Radius */
+    tmp_u16_1 = this->_rpc->getParam_int16();
+
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->fillRoundRect(x1, y1, x2, y2, tmp_u16_1, this->panel->color(r, g, b));
   } else if(cmd_id == 0x41) {
-    panel->setCursor(
-      rpc->getParam_int16(),
-      rpc->getParam_int16()
+    /* Position */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+
+    /* Character */
+    c = this->_rpc->getParam_uint8();
+
+    /* Color: foreground */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    /* Color: background */
+    i = this->_rpc->getParam_uint8();
+    j = this->_rpc->getParam_uint8();
+    k = this->_rpc->getParam_uint8();
+
+    /* Size */
+    tmp_u8 = this->_rpc->getParam_uint8();
+
+    this->panel->drawChar(
+      x1, y1,
+      c,
+      this->panel->color(r, g, b),
+      this->panel->color(i, j, k),
+      tmp_u8
     );
   } else if(cmd_id == 0x42) {
-    panel->setTextColor(
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+
+    this->panel->setCursor(x1, y1);
   } else if(cmd_id == 0x43) {
-    panel->setTextColor(
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      ),
-      panel->color(
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8(),
-        rpc->getParam_uint8()
-      )
-    );
+    /* Color */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    this->panel->setTextColor(this->panel->color(r, g, b));
   } else if(cmd_id == 0x44) {
-    panel->setTextSize(
-      rpc->getParam_uint8()
+    /* Color: foreground */
+    r = this->_rpc->getParam_uint8();
+    g = this->_rpc->getParam_uint8();
+    b = this->_rpc->getParam_uint8();
+
+    /* Color: background */
+    i = this->_rpc->getParam_uint8();
+    j = this->_rpc->getParam_uint8();
+    k = this->_rpc->getParam_uint8();
+
+    this->panel->setTextColor(
+      this->panel->color(r, g, b),
+      this->panel->color(i, j, k)
     );
   } else if(cmd_id == 0x45) {
-    panel->setTextWrap(
-      rpc->getParam_uint8()
-    );
+    /* Size */
+    i = this->_rpc->getParam_uint8();
+
+    this->panel->setTextSize(i);
   } else if(cmd_id == 0x46) {
-    panel->write(
-      rpc->getParam_uint8()
-    );
-  } else if(cmd_id == 0x50) {
-    panel->setRotation(
-      rpc->getParam_uint8()
-    );
+    /* Textwrap */
+    i = this->_rpc->getParam_uint8();
+
+    this->panel->setTextWrap(i);
+  } else if(cmd_id == 0x47) {
+    /* Char */
+    i = this->_rpc->getParam_uint8();
+
+    this->panel->write(i);
   } else if(cmd_id == 0x51) {
-    if(rpc->getParam_uint8() == 1) {
-      panel->swapBuffers(true);
+    /* Rotation */
+    i = this->_rpc->getParam_uint8();
+
+    this->panel->setRotation(i);
+  } else if(cmd_id == 0x52) {
+    /* Copy buffer */
+    i = this->_rpc->getParam_uint8();
+    if(i == 1) {
+      this->panel->swapBuffers(true);
     } else {
-      panel->swapBuffers(false);
+      this->panel->swapBuffers(false);
     }
     return RPC_RETURN_SUCCESS;
-  } else if(cmd_id == 0x52) {
-    options->auto_swap = rpc->getParam_uint8();
+  } else if(cmd_id == 0x53) {
+    /* Auto swap */
+    i = this->_rpc->getParam_uint8();
+
+    this->auto_swap = i;
     return RPC_RETURN_SUCCESS;
-  } else if(cmd_id == 0x60) {
-    uint16_t x;
-    uint16_t y;
-    uint8_t width;
-    uint8_t height;
-    uint8_t color_mode;
-    uint8_t i, j;
-    x = rpc->getParam_int16();
-    y = rpc->getParam_int16();
-    width = rpc->getParam_uint8();
-    height = rpc->getParam_uint8();
-    color_mode = rpc->getParam_uint8();
-    if (color_mode == 2) {
-      for(i = 0; i < width; i++) {
+  } else if(cmd_id == 0x61) {
+    /* Coordinates */
+    x1 = this->_rpc->getParam_int16();
+    y1 = this->_rpc->getParam_int16();
+
+    /* Width and height of the image */
+    width = this->_rpc->getParam_uint8();
+    height = this->_rpc->getParam_uint8();
+
+    /* Encoding: color */
+    tmp_u8 = this->_rpc->getParam_uint8();
+
+    if (tmp_u8 == 0) {
+      for(i = 0; i < height; i++) {
         for(j = 0; j < width; j++) {
-          panel->drawPixel(
-            x + j,
-            y + i,
-            panel->color(
-              rpc->getParam_uint8(),
-              rpc->getParam_uint8(),
-              rpc->getParam_uint8()
+          tmp_u8 = this->_rpc->getParam_uint8();
+          this->panel->drawPixel(
+            x1 + j,
+            y1 + i,
+            this->panel->color(
+              ((tmp_u8 & 0b11000000) >> 6) * 85,
+              ((tmp_u8 & 0b00111000) >> 3) * 36,
+              (tmp_u8 & 0b00000111) * 36
             )
+          );
+        }
+      }
+    } else if (tmp_u8 == 1) {
+      for(i = 0; i < height; i++) {
+        for(j = 0; j < width; j++) {
+          tmp_u16_1 = this->_rpc->getParam_uint16();
+          this->panel->drawPixel(
+            x1 + j,
+            y1 + i,
+            this->panel->color(
+              ((tmp_u16_1 & 0b1111100000000000) >> 11) * 8,
+              ((tmp_u16_1 & 0b0000011111100000) >> 5) * 4,
+              ((tmp_u16_1 & 0b0000000000011111)) * 8
+            )
+          );
+        }
+      }
+    } else if (tmp_u8 == 2) {
+      for(i = 0; i < height; i++) {
+        for(j = 0; j < width; j++) {
+          r = this->_rpc->getParam_uint8();
+          g = this->_rpc->getParam_uint8();
+          b = this->_rpc->getParam_uint8();
+          this->panel->drawPixel(
+            x1 + j,
+            y1 + i,
+            this->panel->color(r, g, b)
           );
         }
       }
@@ -287,17 +394,10 @@ uint8_t ArduRPC_CLTMatrix_GFX_Wrapper(uint8_t cmd_id, ArduRPC *rpc, void *args)
   } else {
     return RPC_RETURN_COMMAND_NOT_FOUND;
   }
-  if(options->auto_swap == 1)
-    panel->swapBuffers(true);
+
+  if(this->auto_swap == 1) {
+    this->panel->swapBuffers(true);
+  }
 
   return RPC_RETURN_SUCCESS;
-}
-
-rpc_handler_t get_ArduRPC_CLTMatrix_GFX_Wrapper(CLTMatrix &panel)
-{
-  struct ArduRPC_CLTMatrix_GFX_options *options = (struct ArduRPC_CLTMatrix_GFX_options *)malloc(sizeof(struct ArduRPC_CLTMatrix_GFX_options));
-  options->auto_swap = 1;
-  options->panel = &panel;
-  rpc_handler_t h = {0x0280, (void *)ArduRPC_CLTMatrix_GFX_Wrapper, (void *)options};
-  return h;
 }
