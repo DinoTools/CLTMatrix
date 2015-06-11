@@ -88,7 +88,7 @@ uint8_t ArduRPC_CLTMatrix_GFX::call(uint8_t cmd_id)
 
     this->panel->drawFastVLine(
       x1, y1,
-      i,
+      tmp_u16_1,
       this->panel->color(r, g, b)
     );
   } else if(cmd_id == 0x23) {
@@ -106,7 +106,7 @@ uint8_t ArduRPC_CLTMatrix_GFX::call(uint8_t cmd_id)
 
     this->panel->drawFastHLine(
       x1, y1,
-      i,
+      tmp_u16_1,
       this->panel->color(r, g, b)
     );
   } else if(cmd_id == 0x24) {
