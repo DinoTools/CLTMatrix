@@ -1,6 +1,6 @@
 /**
  * CLTMatrix
- * Copyright (C) 2014 Philipp Seidel (DinoTools)
+ * Copyright (C) 2014-2015 PhiBo (DinoTools)
  *
  * This file is part of CLTMatrix.
  *
@@ -73,8 +73,9 @@ GFX_Color_t CLTMatrix::color(uint8_t r, uint8_t g, uint8_t b)
  */
 void CLTMatrix::drawPixel(GFX_Coord_t x, GFX_Coord_t y, GFX_Color_t color)
 {
-  if(x > 7 || y > 7 || x < 0 || y < 0)
+  if(x > 7 || y > 7 || x < 0 || y < 0) {
     return;
+  }
   
   CLTMatrix_Color_t *p = this->_getWritePixel(x,y);
 #if GFX_COLOR_MODE == GFX_COLOR_16BIT
@@ -233,23 +234,30 @@ void CLTMatrix::run(void)
   // shift data into registers
   for (i = 0; i < 8; i++) {
     PORTB &= ~(1<<PB4);
+    /* Blue */
     temp = pixel->b;
-    if (temp > step_mapped)
+    if (temp > step_mapped) {
       PORTB |= (1<<PB2);
-    else
+    } else {
       PORTB &= ~(1<<PB2);
-      
-    temp = pixel->g;
-    if (temp > step_mapped)
-      PORTB |= (1<<PB5);
-    else
-      PORTB &= ~(1<<PB5);
+    }
 
+    /* Green */
+    temp = pixel->g;
+    if (temp > step_mapped) {
+      PORTB |= (1<<PB5);
+    } else {
+      PORTB &= ~(1<<PB5);
+    }
+
+    /* Red */
     temp = pixel->r;
-    if (temp > step_mapped)
+    if (temp > step_mapped) {
       PORTB |= (1<<PB1);
-    else
+    } else {
       PORTB &= ~(1<<PB1);
+    }
+
     pixel++;
     PORTB |= (1<<PB4);
   }
@@ -258,20 +266,25 @@ void CLTMatrix::run(void)
   PORTB |= (1 << PB3);
   PORTB &= ~(1 << PB3);
 
-  if (this->step > 0)
+  if (this->step > 0) {
     return;
+  }
 
-  if (tmp_line > 3)
+  if (tmp_line > 3) {
     tmp_line = 11 - tmp_line;
+  }
 
   portc = PORTC & 0b11000111;
 
-  if (tmp_line & 0b00000100)
+  if (tmp_line & 0b00000100) {
     portc = portc | 0b00001000;
-  if (tmp_line & 0b00000010)
+  }
+  if (tmp_line & 0b00000010) {
     portc = portc | 0b00010000;
-  if (tmp_line & 0b000000001)
+  }
+  if (tmp_line & 0b000000001) {
     portc = portc | 0b00100000;
+  }
  
   PORTC = portc;
   // load MUX data
@@ -294,8 +307,9 @@ void CLTMatrix::swapBuffers(boolean copy)
   CLTMatrix_Color_t *tmp = this->activeBuffer;
   this->activeBuffer = this->writeBuffer;
   this->writeBuffer = tmp;
-  if (copy == true)
+  if (copy == true) {
     memcpy(this->writeBuffer, this->activeBuffer, CLTMatrixScreenWidth * CLTMatrixScreenHeight * sizeof(CLTMatrix_Color_t));
+  }
 
   sei();
 }
@@ -308,8 +322,9 @@ ISR(TIMER2_OVF_vect)
   uint8_t i;
   // ISR fires every 256-TCNT2 ticks
   TCNT2 = 230;
-  if(activePanel == NULL)
+  if(activePanel == NULL) {
     return;
+  }
 
   if (activePanel->step > 8) {
     PORTB &= ~(1<<PB2);

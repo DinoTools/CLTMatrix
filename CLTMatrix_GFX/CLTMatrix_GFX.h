@@ -1,6 +1,6 @@
 /**
  * CLTMatrix
- * Copyright (C) 2014 Philipp Seidel (DinoTools)
+ * Copyright (C) 2014-2015 PhiBo (DinoTools)
  *
  * This file is part of CLTMatrix.
  *
